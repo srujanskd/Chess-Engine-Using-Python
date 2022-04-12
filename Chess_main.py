@@ -34,6 +34,7 @@ def main():
     screen.fill(pyg.Color("white"))
     gs = Chess_Engine.Game_State()
     valid_moves = gs.get_valid_moves()#get a list of all the valid moves in the position
+    animate = False #flag variable for when we have to animate
     move_made = False # flag variable for when a move is made
     load_images() 
     sq_selected = () # no square is is selected, keep track of last click of the user (tuple:(row, col))
@@ -65,6 +66,7 @@ def main():
                         if move == valid_moves[i]:
                             gs.make_move(valid_moves[i])
                             move_made = True
+                            animate = True
                             sq_selected = () # reset user clicks
                             player_clicks = []
                     if not move_made:
@@ -73,11 +75,14 @@ def main():
                 if evt.key == pyg.K_z: #undo when 'z' is pressed
                     gs.undo_move()
                     move_made = True
-                    
+                    animate = False
 
         if move_made:
+            if animate:
+                animate_move(gs.movelog[-1], screen, gs.board, clock)
             valid_moves = gs.get_valid_moves() #generate all the moves for the opponent
             move_made = False
+            animate = False
 
         
         draw_game_state(screen, gs, valid_moves, sq_selected)
@@ -127,6 +132,33 @@ def draw_pieces(screen, board):
             piece = board[row][col]
             if piece != "--":
                 screen.blit(IMAGES[piece], pyg.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+"""
+Animating a move
+"""
+def animate_move(move, screen, board, clock):
+    colors = [pyg.Color("white"), pyg.Color("red")]
+    d_r = move.end_row - move.start_row
+    d_c = move.end_col - move.start_col
+    frames_per_square = 10 #frames to move one square
+    frame_count = (abs(d_r) + abs(d_c)) * frames_per_square
+    for frame in range(frame_count+1):
+        row, col = (move.start_row + d_r * frame/frame_count, move.start_col + d_c * frame/frame_count)
+        draw_squares_on_board(screen)
+        draw_pieces(screen, board)
+
+        #erase the piece moved from its ending square
+        color = colors[(move.end_row + move.end_col) % 2]
+        end_square = pyg.Rect(move.end_col * SQUARE_SIZE, move.end_row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
+        pyg.draw.rect(screen, color, end_square)
+        #draw captured piece onto rectangle
+        if move.piece_captured != "--":
+            screen.blit(IMAGES[move.piece_captured], end_square)
+        #draw the moving piece
+        screen.blit(IMAGES[move.piece_moved], pyg.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        pyg.display.flip()
+        clock.tick(60)
+
 
 if __name__ == "__main__":
     main()
