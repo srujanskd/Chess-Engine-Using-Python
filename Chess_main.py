@@ -76,6 +76,13 @@ def main():
                     gs.undo_move()
                     move_made = True
                     animate = False
+                if evt.key == pyg.K_r: #reset board by pressing r
+                    gs = Chess_Engine.Game_State()
+                    valid_moves = gs.get_valid_moves()
+                    sq_selected = ()
+                    player_clicks = []
+                    move_made = False
+                    animate = False
 
         if move_made:
             if animate:
