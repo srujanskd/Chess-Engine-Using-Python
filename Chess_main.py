@@ -79,16 +79,36 @@ def main():
             move_made = False
 
         
-        draw_game_state(screen, gs)
+        draw_game_state(screen, gs, valid_moves, sq_selected)
         clock.tick(MAX_FPS)
         pyg.display.flip()
+
+"""
+Highlight square selected and  moves for piece selected
+"""
+def highlighted_squares(screen, gs, valid_moves, sq_selected):
+    if sq_selected != ():
+        row, col = sq_selected
+        if gs.board[row][col][0] == ('w' if gs.white_to_move else 'b'):
+            #highlight the selected square
+            s = pyg.Surface((SQUARE_SIZE, SQUARE_SIZE))
+            s.set_alpha(100) #transparency value - 0 transparent, 255 opaque
+            s.fill(pyg.Color('blue'))
+            screen.blit(s, (col * SQUARE_SIZE, row*SQUARE_SIZE))
+            #highlight moves from that square
+            s.fill('yellow')
+            for move in valid_moves:
+                if move.start_row == row and move.start_col == col:
+                    screen.blit(s, (SQUARE_SIZE*move.end_col, SQUARE_SIZE * move.end_row))
+
 
 
 """
 Responsible for all the graphics within a current gamestate
 """
-def draw_game_state(screen, gs):
+def draw_game_state(screen, gs, valid_moves, sq_selected):
     draw_squares_on_board(screen) #draw the squares on the board
+    highlighted_squares(screen, gs, valid_moves, sq_selected)
     draw_pieces(screen, gs.board) #draw pieces on top of the squares
 
 #draw the squares on the board
