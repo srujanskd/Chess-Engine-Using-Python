@@ -73,6 +73,7 @@ def main():
                 if evt.key == pyg.K_z: #undo when 'z' is pressed
                     gs.undo_move()
                     move_made = True
+                    
 
         if move_made:
             valid_moves = gs.get_valid_moves() #generate all the moves for the opponent
