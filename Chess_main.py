@@ -5,6 +5,7 @@ displaying Game_State
 
 import pygame as pyg
 import Chess_Engine
+import Chess_AI
 
 WIDTH = 512
 HEIGHT = 512
@@ -40,16 +41,20 @@ def main():
     sq_selected = () # no square is is selected, keep track of last click of the user (tuple:(row, col))
     player_clicks = [] # keep track of player clicks (two tuples: (a,b), (x,y))
     game_over = False
+    player_one = True #if a human is playing white, then this will be true. If it is and AI then it will be false
+    player_two = False #if a human is playing black, then this will be true. If it is and AI then it will be false
 
     running = True
     while running:
+        human_turn = (gs.white_to_move and player_one) or (not gs.white_to_move and player_two)
+
         for evt in pyg.event.get():
             if evt.type == pyg.QUIT:
                 running = False
             
             #mouse handler
             elif evt.type == pyg.MOUSEBUTTONDOWN:
-                if not game_over:
+                if not game_over and human_turn:
                     location = pyg.mouse.get_pos() # mouse location
                     col = location[0] // SQUARE_SIZE
                     row = location[1] // SQUARE_SIZE
@@ -85,6 +90,13 @@ def main():
                     player_clicks = []
                     move_made = False
                     animate = False
+        
+        #AI move finder
+        if not game_over and not human_turn:
+            AI_move = Chess_AI.find_random_move(valid_moves)
+            gs.make_move(AI_move)
+            move_made = True
+            animate = True
 
         if move_made:
             if animate:
@@ -182,7 +194,7 @@ def draw_text(screen, text):
     text_obj = font.render(text, 0, pyg.Color('Black'))
     text_loc = pyg.Rect(0,0, WIDTH, HEIGHT).move(WIDTH / 2 - text_obj.get_width()/2, HEIGHT / 2 - text_obj.get_height() / 2)
     screen.blit(text_obj, text_loc)
-    
+
 
 
 
