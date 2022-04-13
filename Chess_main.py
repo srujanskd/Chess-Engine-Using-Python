@@ -39,6 +39,7 @@ def main():
     load_images() 
     sq_selected = () # no square is is selected, keep track of last click of the user (tuple:(row, col))
     player_clicks = [] # keep track of player clicks (two tuples: (a,b), (x,y))
+    game_over = False
 
     running = True
     while running:
@@ -48,29 +49,30 @@ def main():
             
             #mouse handler
             elif evt.type == pyg.MOUSEBUTTONDOWN:
-                location = pyg.mouse.get_pos() # mouse location
-                col = location[0] // SQUARE_SIZE
-                row = location[1] // SQUARE_SIZE
-                
-                if sq_selected == (row, col): # if player clicks the same square twice, then deselect that square
-                    sq_selected = () #deselect
-                    player_clicks = [] # clear player clicks
-                else:
-                    sq_selected = (row, col)
-                    player_clicks.append(sq_selected) # append both the clicks
-                
-                if len(player_clicks) == 2: # after the second click
-                    move = Chess_Engine.Move(player_clicks[0], player_clicks[1], gs.board)
-                    print(move.get_chess_notation())
-                    for i in range(len(valid_moves)):
-                        if move == valid_moves[i]:
-                            gs.make_move(valid_moves[i])
-                            move_made = True
-                            animate = True
-                            sq_selected = () # reset user clicks
-                            player_clicks = []
-                    if not move_made:
-                        player_clicks = [sq_selected]
+                if not game_over:
+                    location = pyg.mouse.get_pos() # mouse location
+                    col = location[0] // SQUARE_SIZE
+                    row = location[1] // SQUARE_SIZE
+                    
+                    if sq_selected == (row, col): # if player clicks the same square twice, then deselect that square
+                        sq_selected = () #deselect
+                        player_clicks = [] # clear player clicks
+                    else:
+                        sq_selected = (row, col)
+                        player_clicks.append(sq_selected) # append both the clicks
+                    
+                    if len(player_clicks) == 2: # after the second click
+                        move = Chess_Engine.Move(player_clicks[0], player_clicks[1], gs.board)
+                        print(move.get_chess_notation())
+                        for i in range(len(valid_moves)):
+                            if move == valid_moves[i]:
+                                gs.make_move(valid_moves[i])
+                                move_made = True
+                                animate = True
+                                sq_selected = () # reset user clicks
+                                player_clicks = []
+                        if not move_made:
+                            player_clicks = [sq_selected]
             elif evt.type == pyg.KEYDOWN:
                 if evt.key == pyg.K_z: #undo when 'z' is pressed
                     gs.undo_move()
@@ -93,6 +95,16 @@ def main():
 
         
         draw_game_state(screen, gs, valid_moves, sq_selected)
+        if gs.checkmate:
+            game_over = True
+            if gs.white_to_move:
+                draw_text(screen, "Black wins by checkmate")
+            else:
+                draw_text(screen, "White wins by checkmate")
+        elif gs.stalemate:
+            game_over = True
+            draw_text(screen, "Stalemate")
+
         clock.tick(MAX_FPS)
         pyg.display.flip()
 
@@ -165,6 +177,13 @@ def animate_move(move, screen, board, clock):
         screen.blit(IMAGES[move.piece_moved], pyg.Rect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         pyg.display.flip()
         clock.tick(60)
+def draw_text(screen, text):
+    font = pyg.font.SysFont("Helvitca", 32, True, False)
+    text_obj = font.render(text, 0, pyg.Color('Black'))
+    text_loc = pyg.Rect(0,0, WIDTH, HEIGHT).move(WIDTH / 2 - text_obj.get_width()/2, HEIGHT / 2 - text_obj.get_height() / 2)
+    screen.blit(text_obj, text_loc)
+    
+
 
 
 if __name__ == "__main__":
