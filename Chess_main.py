@@ -83,6 +83,7 @@ def main():
                     gs.undo_move()
                     move_made = True
                     animate = False
+                    game_over = False
                 if evt.key == pyg.K_r: #reset board by pressing r
                     gs = Chess_Engine.Game_State()
                     valid_moves = gs.get_valid_moves()
@@ -90,10 +91,14 @@ def main():
                     player_clicks = []
                     move_made = False
                     animate = False
+                    game_over = False
         
         #AI move finder
         if not game_over and not human_turn:
-            AI_move = Chess_AI.find_random_move(valid_moves)
+            AI_move = Chess_AI.find_best_move_minmax(gs, valid_moves)
+            if AI_move is None:
+                AI_move = Chess_AI.find_random_move(valid_moves)
+
             gs.make_move(AI_move)
             move_made = True
             animate = True

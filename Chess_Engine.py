@@ -130,6 +130,8 @@ class Game_State():
                 else: # queen side
                     self.board[move.end_row][move.end_col - 2] = self.board[move.end_row][move.end_col + 1] #move rook
                     self.board[move.end_row][move.end_col + 1] = "--" #empty the square where rook was
+        self.checkmate = False
+        self.stalemate = False
 
         
     """
